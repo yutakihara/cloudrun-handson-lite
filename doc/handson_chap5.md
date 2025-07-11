@@ -72,32 +72,6 @@ gcloud config set run/platform managed
 
 <walkthrough-footnote>CLI（gcloud）で利用するプロジェクトの指定、Cloud Run のデフォルト値の設定が完了しました。次にハンズオンで利用する機能（API）を有効化します。</walkthrough-footnote>
 
-## **参考: Cloud Shell の接続が途切れてしまったときは**
-
-一定時間非アクティブ状態になる、またはブラウザが固まってしまったなどで 「Cloud Shell」 が切れてしまう、またはブラウザのリロードが必要になる場合があります。その場合は次の対応を実施して、チュートリアルを再開してください。
-
-### **1. チュートリアル資材があるディレクトリに移動する**
-
-```bash
-cd ~/cloudrun-handson
-```
-
-### **2. チュートリアルを開く**
-
-```bash
-teachme doc/handson_index.md
-```
-
-### **3. gcloud のデフォルト設定**
-
-```bash
-gcloud config set run/region asia-northeast1
-gcloud config set run/platform managed
-REGION=asia-northeast1
-```
-
-途中まで進めていたチュートリアルのページまで `[次へ]` ボタンを押し、進めてください。
-
 ## **Google Cloud 環境設定**
 
 Google Cloud では利用したい機能（API）ごとに、有効化を行う必要があります。
@@ -129,18 +103,15 @@ sqladmin.googleapis.com
   - HTTPリクエストを受け取り、テキストを返却するアプリケーションです。
 - バックエンドアプリケーション
   - HTTPリクエストを受け取り、JSON形式の応答を返却するアプリケーションです。
-- バッチアプリケーション
-  - データベースの通知データを取得し、更新をするアプリケーションです。
 
 ### **フォルダ、ファイル構成**
 
-フォルダ構成には、フロントエンド、バックエンド、バッチアプリケーションの3つのアプリケーションが含まれています。
+フォルダ構成には、フロントエンド、バックエンドの2つのアプリケーションが含まれています。
 
 ```bash
 .
 ├── app
 │ ├── backend
-│ ├── batch
 │ └── frontend
 │     ├── Dockerfile
 │     ├── cloudbuild_push.yaml
@@ -233,7 +204,7 @@ curl $FRONTEND_URL/frontend
 
 <walkthrough-tutorial-duration duration=10></walkthrough-tutorial-duration>
 
-<walkthrough-enable-apis apis="cloudbuild.googleapis.com"></walkthrough-enable-apis>
+<walkthrough-enable-apis apis="cloudbuild.googleapis.com,secretmanager.googleapis.com"></walkthrough-enable-apis>
 
 Cloud Buildのコンソール画面から設定をしましょう。
 
@@ -264,6 +235,10 @@ Cloud Buildの画面に戻り、`[既存のGitHubインストールの使用]`�
 ホスト接続が作成できたら、次に`[リポジトリをリンク]`を押下します。
 
 先ほど作成したホスト接続を選択し、リポジトリには今回のサンプルアプリケーションを選択して`[リンク]`を押します。
+
+<walkthrough-info-message>
+表示されるリポジトリ一覧に対象のリポジトリが表示されない場合、GitHub側の設定を変更する必要があります。三点リーダアイコンから、`[インストールを管理]`を押して、Repository accessの範囲を広げてください。
+</walkthrough-info-message>
 
 以上でGitHubリポジトリとの接続が完了です。
 
@@ -369,6 +344,7 @@ APP_TYPE=frontend
 sed -e "s/PROJECT_ID/${GOOGLE_CLOUD_PROJECT}/g" doc/clouddeploy.yml | sed -e "s/REGION/asia-northeast1/g" | sed -e "s/SERVICE_NAME/cnsrun-${APP_TYPE}/g" > /tmp/clouddeploy_${APP_TYPE}.yml
 gcloud deploy apply --file=/tmp/clouddeploy_${APP_TYPE}.yml --region asia-northeast1
 ```
+
 <walkthrough-spotlight-pointer cssSelector="[id=cfctest-section-nav-item-delivery_pipelines]">デリバリーパイプライン</walkthrough-spotlight-pointer>、<walkthrough-spotlight-pointer cssSelector="[id=cfctest-section-nav-item-targets]">デプロイ先ターゲット</walkthrough-spotlight-pointer>の設定が完了したことをコンソールから確認して次に進みましょう。
 
 ## **フロントエンドアプリケーションを修正**
@@ -387,22 +363,22 @@ Cloud RunのYAML設定ファイルの設定も少し変更をします。
 次のコマンドを実行してください。
 
 ```bash
-echo ${GOOGLE_CLOUD_PROJECT}
+YOUR_PROJECT_ID=$(echo $GOOGLE_CLOUD_PROJECT)
 ```
 
 編集ファイルがローカル環境にあり、macOSの場合は次のコマンドで更新もできます。
-コマンド実行が難しい場合は、下記のファイルの`PROJECT_ID`を手動で自身のプロジェクトIDに置き換えてください。
-
-- `app/frontend/cloudrun.yaml`
-- `app/backend/cloudrun.yaml`
-- `app/batch/cloudrun.yaml`
 
 ```bash
-YOUR_PROJECT_ID=`自身のプロジェクトID`
 sed -i -e "s/PROJECT_ID/${YOUR_PROJECT_ID}/g" app/frontend/cloudrun.yaml
 sed -i -e "s/PROJECT_ID/${YOUR_PROJECT_ID}/g" app/backend/cloudrun.yaml
 sed -i -e "s/PROJECT_ID/${YOUR_PROJECT_ID}/g" app/batch/cloudrun.yaml
 ```
+
+コマンド実行が難しい場合は、次のファイルの`PROJECT_ID`を手動で自身のプロジェクトIDに置き換えてください。
+
+- `app/frontend/cloudrun.yaml`
+- `app/backend/cloudrun.yaml`
+- `app/batch/cloudrun.yaml`
 
 変更を加えたら、リモートブランチへプッシュをして、Cloud Buildの`[履歴メニュー]`から処理が起動したことを確認します。
 
@@ -483,7 +459,6 @@ gcloud compute target-https-proxies create cnsrun-https-proxies \
 ```
 
 最後に払い出したグローバルIPアドレスとHTTPSプロキシを紐づけたロードバランサを作成します。
-
 
 ```bash
 gcloud compute forwarding-rules create --global cnsrun-lb \
@@ -978,7 +953,6 @@ SELECT文を<walkthrough-spotlight-pointer spotlightId="fr-query-run-button">実
 
 最後に、作成したDBへ接続するための設定をバックエンドアプリケーションに追加します。
 
-
 ```bash
 gcloud sql instances describe cnsrun-app-instance --format='value(ipAddresses[0].ipAddress)'
 ```
@@ -1026,7 +1000,6 @@ YAML設定ファイルを修正後、コードをプッシュして、Cloud Buil
 
 **注意：** YAMLファイルはインデントが重要です。修正を行う際は、インデントが正しいことを確認してください。筆者も疎通中何度もミスりました。。。
 
-
 ## **DB接続ができることを確認**
 
 バックエンドアプリケーションがCloud SQLに接続できることを確認します。
@@ -1049,6 +1022,7 @@ JSON形式の応答が返ってくればOKです。
 - 定期実行のためのスケジューラ設定
 
 ### **1. アプリケーションイメージの登録**
+
 フロントエンドアプリケーション同様、Artifact Registryに対してジョブのイメージを登録します。
 
 ```bash
@@ -1058,7 +1032,6 @@ JSON形式の応答が返ってくればOKです。
 ```bash
 docker push asia-northeast1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/cnsrun-app/batch:v1
 ```
-
 
 ### ***2. サービスアカウントの作成**
 
@@ -1197,7 +1170,6 @@ curl -k https://$LB_GLOBAL_IP/backend/notification?id=1
 - 複数のCloud Runを連携する
 - データベースと接続をする
 - Cloud Runジョブを利用する
-
 
 次のハンズオンでは、ここまで構築した構成をプロダクションレディにしていきます。
 
