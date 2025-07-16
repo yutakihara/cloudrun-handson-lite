@@ -731,9 +731,7 @@ Step5では次の手順で構築を進めます。
 
 <walkthrough-menu-navigation sectionId="SQL_SECTION"></walkthrough-menu-navigation>
 
-見つからない場合は次のリンクから開くか、画面真ん中上部の検索から遷移をしてください。
-
-<walkthrough-path-nav path="https://console.cloud.google.com/sql/instances" >Cloud SQL に移動</walkthrough-path-nav>
+画面真ん中上部の検索から遷移をしてください。
 
 <walkthrough-spotlight-pointer cssSelector="a[aria-label=インスタンスの作成ページに移動するボタン]" validationPath="/sql/instances">インスタンスを作成</walkthrough-spotlight-pointer> をします。
 
@@ -742,6 +740,14 @@ Step5では次の手順で構築を進めます。
 <walkthrough-spotlight-pointer locator="semantic({button 'PostgreSQL を選択'})" validationPath="sql/choose-instance-engine">PostgreSQL を選択</walkthrough-spotlight-pointer>を押します。
 
 ### **2. インスタンスの作成（基本部分）**
+
+Cloud SQL のエディションの選択します。
+本番利用ではプリセットは本番を選択しますが、**料金の関係上、`サンドボックス`**を選択します。
+
+- `[エディション]`
+  - `Enterprise`
+- `[プリセット]`
+  - `サンドボックス`
 
 インスタンスの情報を入力します。
 
@@ -755,15 +761,7 @@ Step5では次の手順で構築を進めます。
     - 複雑さを要求
     - パスワードにユーザー名を許可しない
 - `[データベースのバージョン]`
-  - `PostgresSQL 15`
-
-Cloud SQL のエディションの選択します。
-本番利用ではプリセットは本番を選択しますが、**料金の関係上、`サンドボックス`**を選択します。
-
-- `[エディション]`
-  - `Enterprise`
-- `[プリセット]`
-  - `サンドボックス`
+  - `PostgresSQL 17`
 
 リージョンとゾーンの可用性の選択します。こちらも通常は`複数のゾーン（高可用性）`を選択しますが、料金の関係上`シングルゾーン`にします。
 
@@ -814,7 +812,9 @@ Cloud SQL のエディションの選択します。
 
 <walkthrough-spotlight-pointer locator="semantic({button 'インスタンスを作成'})" validationPath="/sql/instances/create">インスタンスを作成</walkthrough-spotlight-pointer> ボタンを押しましょう。
 
-インスタンスの作成には時間がかかります。作成が**進行していること**を確認し、次のステップに進みます。
+インスタンスの作成には時間がかかります。
+筆者の環境では約20分ほどかかりました。
+作成が**進行していること**を確認し、次のステップに進みます。
 
 ## **Secret ManagerへDB接続情報を登録**
 
@@ -876,7 +876,7 @@ gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
 2. <walkthrough-spotlight-pointer locator="semantic({button 'ユーザー アカウントを追加'})" validationPath="/sql/.*">ユーザーアカウントを追加</walkthrough-spotlight-pointer>ボタンを押します。
 3. 組み込み認証を選択します。
 4. ユーザー名は`app`を入力します。
-5. ポリシーに沿って入力をします。以前に`DB_PASSWORD`としてSecret Managerに設定した値（例：DB-app-pass-1234）にします。。
+5. ポリシーに沿って入力をします。以前に`DB_PASSWORD`としてSecret Managerに設定した値（例：DB-user-pass-1234）にします。
 6. <walkthrough-spotlight-pointer cssSelector="button[type=submit]" validationPath="/sql/.*">追加</walkthrough-spotlight-pointer>を押します。
 
 ### **3. テーブル作成**
@@ -886,13 +886,13 @@ Cloud SQLには、コンソールにある「**Cloud SQL Studio**」から直接
 作成したインスタンスの詳細画面に遷移をして、<walkthrough-spotlight-pointer cssSelector="#cfctest-section-nav-item-studio">Cloud SQL Studio</walkthrough-spotlight-pointer>に進みます。
 
 - `[データベース]`
-  - `cnsrun-app`
+  - `cnsrun`
 - `[ユーザー]`
   - `app`
 - `[パスワード]`
   - `{「2. ユーザーの作成」で設定したパスワード}`
 
-次のSQLを`[エディタ１]`のテキストエリアに記述し、<walkthrough-spotlight-pointer spotlightId="fr-query-run-button">SQLコマンドを実行</walkthrough-spotlight-pointer>してテーブルを作成します。
+次のSQLを`[エディタ１]`のテキストエリアに記述します。
 
 ```postgresql
 CREATE TABLE "notification"
@@ -918,13 +918,15 @@ CREATE TABLE "users"
 CREATE INDEX notification_email_idx ON "notification" (email);
 ```
 
+<walkthrough-spotlight-pointer spotlightId="fr-query-run-button">SQLコマンドを実行</walkthrough-spotlight-pointer>してテーブルを作成しましょう。
+
 <walkthrough-info-message>`user`はPostgreSQLのユーザテーブルと重複するので、`users`としています。</walkthrough-info-message>
 
 ### **4. データの登録**
 
 Cloud SQL Studioで続けてデータを登録します。
 
-次のSQLをテキストエリアに記述し、<walkthrough-spotlight-pointer spotlightId="fr-query-run-button" validationPath="/sql/instances/cnsrun-app-.*/studio">SQLコマンドを実行</walkthrough-spotlight-pointer>してテーブルを作成します。
+次のSQLをテキストエリアに記述します。
 
 ```postgresql
 -- Insert 1
@@ -951,6 +953,7 @@ VALUES ('user2@example.com', 'THE CLOUD RUN が再入荷しました！ 売り�
 INSERT INTO "users" ("email") VALUES ('user1@example.com');
 ```
 
+<walkthrough-spotlight-pointer spotlightId="fr-query-run-button" validationPath="/sql/instances/cnsrun-app-.*/studio">SQLコマンドを実行</walkthrough-spotlight-pointer>してデータを作成します。
 データが登録されたことを確認しましょう。
 
 ```postgresql
@@ -962,6 +965,7 @@ SELECT文を<walkthrough-spotlight-pointer spotlightId="fr-query-run-button">実
 
 ## **バックエンドアプリケーションの修正**
 
+<walkthrough-enable-apis apis="sqladmin.googleapis.com"></walkthrough-enable-apis>
 最後に、作成したDBへ接続するための設定をバックエンドアプリケーションに追加します。
 
 ```bash
@@ -1022,153 +1026,6 @@ curl -k https://$LB_GLOBAL_IP/backend/notification?id=1
 
 JSON形式の応答が返ってくればOKです。
 
-## **Cloud Runジョブを利用する**
-
-<walkthrough-tutorial-duration duration=15></walkthrough-tutorial-duration>
-
-最後に、Cloud Runジョブを利用して、定期的にDBに更新をかけるジョブを作成します。
-次の流れで構築をします。
-
-- Cloud Runジョブの作成
-- 定期実行のためのスケジューラ設定
-
-### **1. アプリケーションイメージの登録**
-
-フロントエンドアプリケーション同様、Artifact Registryに対してジョブのイメージを登録します。
-
-```bash
-(cd app/batch && docker build -t asia-northeast1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/cnsrun-app/batch:v1 .)
-```
-
-```bash
-docker push asia-northeast1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/cnsrun-app/batch:v1
-```
-
-### ***2. サービスアカウントの作成**
-
-Cloud Runジョブに割り当てるサービスアカウントを作成します。
-
-```bash
-gcloud iam service-accounts create cnsrun-app-batch \
- --display-name "Service Account for cnsrun-batch"
-```
-
-### **3. Cloud Runジョブのデプロイ**
-
-Cloud Buildから作成してもいいのですが、手動で作成しておく体験をするために、ここでは手動でジョブを作成します。
-  
-```bash
-gcloud run jobs deploy cnsrun-batch \
---image=asia-northeast1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/cnsrun-app/batch:v1 \
---region=asia-northeast1 \
---service-account=cnsrun-app-batch \
---parallelism=1 \
---execute-now
-```
-
-`--execute-now`を指定することで、ジョブは即時実行されます。
-環境変数やネットワーク設定をしていないためジョブは失敗します。
-ジョブ実行が失敗していることを確認しましょう。
-
-### **4. Cloud Build の作成**
-
-CI/CDの設定のためCloud Buildのトリガを作成します。
-
-```bash
-REPO_NAME=$(gcloud beta builds repositories list --connection=cnsrun-app-handson --region=asia-northeast1 --format=json | jq -r .[].name)
-```
-
-```bash
-gcloud beta builds triggers create github \
---name=cnsrun-batch-trigger \
---region=asia-northeast1 \
---repository="$REPO_NAME" \
---branch-pattern=^main$ \
---build-config=app/batch/cloudbuild_push.yaml \
---included-files=app/batch/** \
---substitutions=_DEPLOY_ENV=main \
---service-account=projects/${GOOGLE_CLOUD_PROJECT}/serviceAccounts/cnsrun-cloudbuild@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com
-```
-
-### **5. Cloud Deploy の作成**
-
-こちらも同様に作成します。
-
-```bash
-APP_TYPE=batch
-sed -e "s/PROJECT_ID/${GOOGLE_CLOUD_PROJECT}/g" doc/clouddeploy.yml | sed -e "s/REGION/asia-northeast1/g" | sed -e "s/SERVICE_NAME/cnsrun-${APP_TYPE}/g" > /tmp/clouddeploy_${APP_TYPE}.yml
-gcloud deploy apply --file=/tmp/clouddeploy_${APP_TYPE}.yml --region asia-northeast1
-```
-
-足回りができました。次に進みましょう。
-
-## **ジョブのYAML設定ファイル修正**
-
-バックエンドアプリケーション同様、Cloud SQLに接続するための設定をします。
-`DBのIPアドレス`には、次のgcloudコマンドで取得できるCloud SQLのIPアドレスを指定します。
-
-```bash
-gcloud sql instances describe cnsrun-app-instance --format='value(ipAddresses[0].ipAddress)'
-```
-
-- DBへ接続するための各種設定
-  - `DB\_HOST`を上記のIPアドレスに変更
-  - `DBのIPアドレス`には、gcloudコマンドで取得できるCloud SQLのIPアドレスを指定します。
-
-```patch
-             - name: DB_HOST
--             value: "10.0.200.3"  # FIXME: Change DB_HOST value to actual private IP address after Cloud SQL created
-+             value: `DBのIPアドレス`
-```
-
-YAML設定ファイルを修正後、コードをプッシュして、Cloud Build経由でバックエンドアプリケーションをデプロイしましょう。
-
-## **サービスアカウントへの権限追加**
-
-```bash
-gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
-  --member=serviceAccount:cnsrun-app-batch@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com \
-  --condition=None \
-  --role=roles/run.invoker
-gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
---member=serviceAccount:cnsrun-app-batch@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com \
---condition=None \
---role=roles/cloudsql.client
-gcloud secrets add-iam-policy-binding cnsrun-app-db-password \
---member=serviceAccount:cnsrun-app-batch@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com \
---role=roles/secretmanager.secretAccessor
-```
-
-## **定期実行のためのスケジューラ設定**
-
-最後に、ジョブを定期実行するためのスケジューラを設定します。
-
-```bash
-gcloud scheduler jobs create http cnsrun-batch-job-scheduler \
-  --location=asia-northeast1 \
-  --schedule="* * * * *" \
-  --uri="https://asia-northeast1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${GOOGLE_CLOUD_PROJECT}/jobs/cnsrun-batch:run" \
-  --http-method POST \
-  --time-zone=Asia/Tokyo \
-  --attempt-deadline=5m \
-  --description="Run the batch job every minute" \
-  --oauth-service-account-email=cnsrun-app-batch@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com
-```
-
-## **Cloud Runジョブの動作確認**
-
-Cloud Runジョブによって通知テーブルのデータが更新されていることを確認します。
-ジョブではUsersテーブルに登録されているメールアドレスの通知に対して、`verification`フラグを立てる処理を行っています。
-
-フロントエンドアプリケーションから取得する通知の内容が変化していることを確認します。
-
-```bash
-LB_GLOBAL_IP=$(gcloud compute addresses describe cnsrun-ip --global --format='value(address)')
-curl -k https://$LB_GLOBAL_IP/backend/notification?id=1
-```
-
-`verification`が `true`となっていることを確認できたらOKです。
-
 ## **お疲れ様でした！**
 
 <walkthrough-conclusion-trophy></walkthrough-conclusion-trophy>
@@ -1180,7 +1037,6 @@ curl -k https://$LB_GLOBAL_IP/backend/notification?id=1
 - Cloud Runの前に外部ALBを設定する
 - 複数のCloud Runを連携する
 - データベースと接続をする
-- Cloud Runジョブを利用する
 
 次のハンズオンでは、ここまで構築した構成をプロダクションレディにしていきます。
 
