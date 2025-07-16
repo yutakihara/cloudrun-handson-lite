@@ -104,7 +104,6 @@ Google Cloud ConsoleからArtifact Registryのページに移動して機能をO
 イメージスキャンは、コンテナイメージをArtifact Registryにプッシュする際に自動的に実行されます。
 フロントエンドアプリケーションの新しいイメージをプッシュして、スキャンが実行されることを確認しましょう。
 
-
 ```bash
 (cd app/frontend && touch dummy && docker build -t asia-northeast1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/cnsrun-app/frontend:v2 .)
 ```
@@ -131,19 +130,19 @@ Google Cloudでは、それらに対するサービスとして[Cloud Armor](htt
 
 <walkthrough-path-nav path="https://console.cloud.google.com/net-security/securitypolicies/list"> Cloud Armorページに移動</walkthrough-path-nav>
 
-## **セキュリティポリシーの作成**
+### **セキュリティポリシーの作成**
 
 Cloud Armorを利用するためには、セキュリティポリシーを作成する必要があります。
 セキュリティポリシーに対して、どのルールを適用するか、どのターゲットにポリシーをアタッチするかを設定します。
 
 さっそく作成に移りましょう。
 
-
 ```bash
 SECURITY_POLICY_NAME=cnsrun-waf-policy
 gcloud compute security-policies create $SECURITY_POLICY_NAME 
 ```
-## **ルールの作成**
+
+### **ルールの作成**
 
 ルールがなければ、セキュリティポリシーは動作しません。
 次に、セキュリティポリシーに適用するルールを作成します。
@@ -255,8 +254,7 @@ Try your request in another zone, or view documentation on how to increase quota
 
 <walkthrough-footnote>ルール一覧：https://cloud.google.com/armor/docs/waf-rules</walkthrough-footnote>
 
-
-## **ターゲットの設定**
+### **ターゲットの設定**
 
 セキュリティポリシーを適用するターゲットを設定します。
 
@@ -269,7 +267,7 @@ gcloud compute backend-services update $BACKEND_SERVICE_NAME \
     --global
 ```
 
-## **Cloud Armorの設定チェック**
+### **Cloud Armorの設定チェック**
 
 セキュリティポリシーが正しく設定されているか、テストしましょう。
 
@@ -281,7 +279,6 @@ LB_GLOBAL_IP=$(gcloud compute addresses describe cnsrun-ip --global --format='va
 
 ```bash
 curl -i -k https://$LB_GLOBAL_IP/backend?id=none
-# HTTP200 OK
 ```
 
 HTTP200が正しく返却されます。
@@ -291,10 +288,8 @@ HTTP200が正しく返却されます。
 
 <walkthrough-info-message>設定がバックエンドサービスに反映されるまで、少し時間がかかります。HTTP200が応答される場合、しばらく時間をおきましょう。</walkthrough-info-message>
 
-
 ```bash
 curl -i -k https://$LB_GLOBAL_IP/backend?id="<script>alert('XSS')</script>"
-# HTTP403 Forbidden
 ```
 
 想定通り、HTTP403 Forbiddenが返却されました。
@@ -303,7 +298,6 @@ curl -i -k https://$LB_GLOBAL_IP/backend?id="<script>alert('XSS')</script>"
 
 ```bash
 curl -i -k https://$LB_GLOBAL_IP/backend?id="foo\%27\%20OR\%20bar\%27\%3D\%27bar"
-# HTTP403 Forbidden
 ```
 
 こちらも想定通りにHTTP403 Forbiddenが返却されました。
@@ -372,7 +366,7 @@ gcloud deploy apply --file=/tmp/clouddeploy_${APP_TYPE}.yml --region asia-northe
 <walkthrough-path-nav path="https://console.cloud.google.com/deploy" >Cloud Deploy に移動</walkthrough-path-nav>
 
 1. <walkthrough-spotlight-pointer cssSelector="[id=cfctest-section-nav-item-delivery_pipelines]" validationPath="/deploy"> デリバリーパイプライン </walkthrough-spotlight-pointer>を選択します。
-2. `[cnsrun-frontend]`を選択します。 
+2. `[cnsrun-frontend]`を選択します。
 3. <walkthrough-spotlight-pointer locator="semantic({tab 'ターゲット'})" validationPath="/deploy/delivery-pipelines/asia-northeast1/cnsrun-frontend">ターゲット</walkthrough-spotlight-pointer>タブを選択します。
 4. `[名前]`の列にあるリンクを選択し、ターゲットの詳細を確認します。
 
@@ -408,7 +402,7 @@ gcloud deploy apply --file=/tmp/clouddeploy_${APP_TYPE}.yml --region asia-northe
 
 SLI の詳細では、そのまま<walkthrough-spotlight-pointer locator="semantic({button '続行'})" validationPath="/run/detail/asia-northeast1/cnsrun.*">続行</walkthrough-spotlight-pointer>を押します。
 
-### **サービスレベル目標（SLO）の作成** 
+### **サービスレベル目標（SLO）の作成**
 
 次はSLOの設定です。次のように設定をします。
 
@@ -430,20 +424,21 @@ SLI の詳細では、そのまま<walkthrough-spotlight-pointer locator="semant
 ```bash
 ab -n 50000 -c 2 https://$LB_GLOBAL_IP/random
 ```
+
 </walkthrough-info-message>
 
 ## **未承認のコンテナイメージのデプロイを防ぐ**
 
 コンテナイメージのセキュリティを強化するために、Binary Authorizationを利用して未承認のコンテナイメージのデプロイを防ぎます。
 
-## **1. KMSを利用した鍵ペアの作成**
+### **1. KMSを利用した鍵ペアの作成**
 
 <walkthrough-enable-apis apis="cloudkms.googleapis.com"></walkthrough-enable-apis>
 
 まずは、Binary Authorizationで利用するための鍵ペアを作成します。
 
 KMSのキーリングを作成します。
-    
+
 ```bash
 KEYRING_NAME=cnsrun-keyring
 gcloud kms keyrings create $KEYRING_NAME --location=asia-northeast1
@@ -456,7 +451,7 @@ KEY_NAME=cnsrun-attestor-key
 gcloud kms keys create $KEY_NAME --location=asia-northeast1 --keyring=$KEYRING_NAME --purpose=asymmetric-signing --default-algorithm=ec-sign-p256-sha256
 ```
 
-## **2. 認証者(Attestor)の作成**
+### **2. 認証者(Attestor)の作成**
 
 次に、Binary Authorizationで利用する認証者(Attestor)を作成します。
 
@@ -467,16 +462,18 @@ gcloud kms keys create $KEY_NAME --location=asia-northeast1 --keyring=$KEYRING_N
 3. 認証者の名前として、`cnsrun-attestor`と入力します。
 4. 公開鍵として<walkthrough-spotlight-pointer locator="semantic({button 'pkix 公開鍵を追加'})" validationPath="/security/binary-authorization/attestors">PKIX 公開鍵</walkthrough-spotlight-pointer>を選択します。
 5. 次のコマンドで表示されるキーバージョンのリソースIDをメモします。次の手順で利用します。
+
 ```bash
 KEY_VERSION=$(gcloud kms keys versions list --location=asia-northeast1 --keyring=$KEYRING_NAME --key=$KEY_NAME --format=json | jq -r .[].name)
 echo $KEY_VERSION
 ```
+
 6. <walkthrough-spotlight-pointer locator="semantic({button 'Cloud KMS から公開鍵マテリアルをインポート'})" validationPath="/security/binary-authorization/attestors">CLOUD KMSからインポート</walkthrough-spotlight-pointer>を選択します。
 7. メモしておいたリソースIDを入力します。
 7. 詳細設定の<walkthrough-spotlight-pointer locator="semantic({button '詳細設定を切り替えます'})" validationPath="/security/binary-authorization/attestors/create">アコーディオン</walkthrough-spotlight-pointer>を開いて、<walkthrough-spotlight-pointer cssSelector="[type=checkbox]" validationPath="/security/binary-authorization/attestors/create">Container Analysis メモを自動生成する</walkthrough-spotlight-pointer>にチェックを付けます。
 8. <walkthrough-spotlight-pointer locator="semantic({button '作成'})" validationPath="/security/binary-authorization/attestors/create">作成</walkthrough-spotlight-pointer>ボタンを押します。
 
-## **3. 証明書の作成**
+### **3. 証明書の作成**
 
 次に、Binary Authorizationで利用するための証明書を作成します。
 
@@ -516,7 +513,7 @@ gcloud beta container binauthz attestations sign-and-create \
     --keyversion="${KEY_VERSION}"
 ```
 
-## **4. Binary Authorizationのポリシー設定**
+### **4. Binary Authorizationのポリシー設定**
 
 最後に、Binary Authorizationのポリシーを設定します。
 今回作成した認証者によって承認されたコンテナイメージのみデプロイを許可するように設定します。
@@ -528,7 +525,7 @@ gcloud beta container binauthz attestations sign-and-create \
 5. `プロジェクトと認証者の名前により追加`にチェックを入れたままにし、アテスターの`[認証者の名前]`として、`cnsrun-attestor`を入力して、`[認証者の追加]`ボタンを押します。
 6. <walkthrough-spotlight-pointer locator="semantic({button 'ポリシーを保存'})" validationPath="/security/binary-authorization/policy/edit">ポリシーを保存</walkthrough-spotlight-pointer>を押して編集を完了します。
 
-## **5. Cloud Runのセキュリティ設定変更**
+### **5. Cloud Runのセキュリティ設定変更**
 
 最後に、Cloud Runのセキュリティ設定を変更して、Binary Authorizationによる証明書の検証を有効にします。
 
@@ -557,7 +554,6 @@ gcloud beta container binauthz attestations sign-and-create \
 `No attestations found that were valid and signed by a key trusted by the attestor`
 
 このように証明書が内部で検証され、証明書がない場合はデプロイが拒否されることが確認できました。
-
 
 最後に、証明書を付与したイメージではデプロイができることを確認しておきましょう。
 次のコマンドで表示される値に合致するコンテナイメージで、先ほどと同様にデプロイを実施してください。
@@ -619,171 +615,6 @@ CI/CDプロセスが完了し、デプロイが成功することを確認しま
 
 Binary Authorizationが有効化されており、新しいアプリケーションのデプロイが成功していればOKです！
 
-## **Cloud Runをカスタムドメインでホスティング**
-
-Cloud Runはデフォルトで`*.run.app`のドメインで提供されますが、カスタムドメインを利用することで、自社のドメインで提供することができます。
-
-外部ALBを使用する場合、自己署名証明書を利用することもできますが、カスタムドメインを利用することで信頼できるCAによる証明書を利用することができます。
-本番利用では、APIアクセスの際にIP指定ではなくドメインでアクセスすることが多いです。
-
-そのため、本ハンズオンでは独自ドメインを取得します。
-そして、取得した独自ドメインを利用してCloud Runにアクセスする方法を試していきましょう。
-
-<walkthrough-info-message><strong>注意：Cloud Domainでドメインを取得する場合、ドメインの取得費用がかかります。すでに独自ドメインを取得している場合や無料ドメインを利用する場合はCloud Domainの手順はスキップをしてください。</strong></walkthrough-info-message>
-
-手順としては次の流れですすめます。
-
-- Cloud Domainでドメインを取得
-- ドメインに対する証明書を取得
-- ロードバランサに対して証明書を設定
-
-また、本ハンズオンでは、取得するドメイン名を`uma-arai.com`として記載をしています。
-本箇所は各自の取得したいドメイン名に置き換えてください。
-
-### **Cloud Domainでドメインを取得**
-
-<walkthrough-info-message>再掲：Cloud Domainでドメインを取得する場合、ドメインの取得費用がかかります。すでに独自ドメインを取得している場合や無料ドメインを利用する場合はCloud Domainの手順はスキップをしてください。</walkthrough-info-message>
-
-<walkthrough-enable-apis apis="domains.googleapis.com, dns.googleapis.com"></walkthrough-enable-apis>
-
-1. コンソールから Cloud Domainsのページに移動します。
-<walkthrough-watcher-block link-url="https://console.cloud.google.com/net-services/domains"> Cloud Domains に移動</walkthrough-watcher-block>
-
-2. `[ドメインを登録]` をクリックします。
-
-3. 購入する利用可能なドメイン名を検索し、`[選択]` をクリックしてカートに追加します。利用可能なドメインごとに料金が表示されています。
-
-**注意：** こちらはドメイン取得時点で課金されるため、ご注意ください。
-
-### **ドメインに対するDNSを設定**
-
-`[DNS構成]` セクションで、`Cloud DNS を使用する（推奨）` がデフォルトで選択されています。
-ゾーン名の変更は不要であるため、`[続行]` をクリックしましょう。
-
-### **ドメインのプライバシー設定**
-
-デフォルトでは、`プライバシー保護を有効にする`が選択されています。
-2024年5月時点ではこちらのオプションを選択できますが、`「プライバシー保護を有効にする」のサポートは 2024 年初頭に終了します。このオプションを使用するすべての登録は、「一般公開される情報を制限する」に更新されます。`との注意書きがあります。
-こちらは極力プライバシー保護をつけた状態にしておきましょう。
-
-### **連絡先情報の入力**
-
-指定するドメインの連絡先情報を入力します。
-デフォルトでは、入力した連絡先情報が、登録者、管理者、技術担当者の連絡先に適用されます。
-各項目を入力していきましょう。**この際、メールアドレスは自身が受信をできるアドレスを指定してください。**
-
-ドメインを登録するには、`[登録]` をクリックします。
-
-登録の処理には数分かかることがあります。
-ドメインを登録したら、Cloud Domains から受信した確認メールに返信する必要があります。
-
-### メールアドレスの認証
-
-1. 新しいブラウザを開いて、ドメインの登録に使用したメールアカウントにログインします。 
-2. Google Domains(domains-noreply@google.com）から届いた「Action required: Please verify your email address for `取得したドメイン名`」　という件名のメールを開きます。
-3. `[Verify email now]` をクリックします。 
-4. 遷移先の画面で、メールアドレスの確認が完了したことを示す確認メッセージが表示されます。
-
-以上で、ドメインの取得が完了です。
-
---- 
-
-こちらのドメインを利用して次のステップに進んでいきましょう。
-
-## **ドメインに対する証明書を取得**
-
-```bash
-gcloud compute ssl-certificates create cnsrun-frontend     --description=DESCRIPTION     --domains=cnsrunapp.uma-arai.com     --global
-```
-
-### **ロードバランサに対して証明書を設定**
-
-```bash
-gcloud compute target-https-proxies update cnsrun-https-proxies \
-    --ssl-certificates cnsrun-frontend \
-    --global-ssl-certificates \
-    --global
-```
-
-ロードバランサに証明書が正しく紐づいているか確認しましょう。
-
-```bash
-gcloud compute target-https-proxies describe cnsrun-https-proxies --global --format="get(sslCertificates)"
-```
-
-末尾に、`cnsrun-frontend`と表示されていればOKです。
-
-## **DNSレコードの設定**
-
-次に、いままでロードバランサが使用していたグローバルIPアドレスに対して、Aレコードを設定します。
-
-```bash
-LB_GLOBAL_IP=$(gcloud compute addresses describe cnsrun-ip --global --format='value(address)')
-```
-
-取得したIPアドレスをDNSレコードに設定します。
-今回はCloud DNSをDNSサーバとして利用した場合の設定例を示します。
-ほかのDNSサービスを利用している場合、そのサービスの設定方法に従って設定してください。
-
-次のコマンドで表示される値に合致するゾーン名をメモしてください。
-
-```bash
-gcloud dns managed-zones list --format=json | jq -r .[].name
-```
-
-先ほどメモしたゾーン名を変数に入れておきます。
-
-```bash
-CNSRUN_ZONE={メモしたゾーン名}
-```
-
-```bash
-gcloud dns record-sets transaction start --zone=${CNSRUN_ZONE}
-gcloud dns record-sets transaction add $LB_GLOBAL_IP --name=cnsrunapp.uma-arai.com. --ttl=300 --type=A --zone=${CNSRUN_ZONE}
-gcloud dns record-sets transaction execute --zone=${CNSRUN_ZONE}
-```
-
-ここまでの設定をすることで、GoogleマネージドSSL証明書が有効になるための準備ができました。
-設定したDNSレコードが伝搬されて証明書が有効化されるまでは時間がかかる場合があります。
-気長に待ちましょう（筆者の環境では5分で終わるときもあれば、30分かかる時もありました）。
-
-<walkthrough-footnote>DNSレコードの伝搬に時間がかかる：https://cloud.google.com/load-balancing/docs/ssl-certificates/google-managed-certs?hl=ja#dns_record_propagation_time</walkthrough-footnote>
-
-十分に時間をおいた後、証明書が正しく設定されているか確認しましょう。
-ステータスが`ACTIVE`であれば正常に設定されています。
-
-```bash
-gcloud compute ssl-certificates describe cnsrun-frontend --global --format="get(name,managed.status, managed.domainStatus)"
-```
-
-## **カスタムドメインのテスト**
-
-最後はフロントエンドアプリケーションにアクセスして、ドメインでアクセスができるか確認しましょう。
-ただし、こちらについてもロードバランサがSSL証明書を利用するまでに時間がかかることがあります。
-
-<walkthrough-footnote>https://cloud.google.com/load-balancing/docs/ssl-certificates/google-managed-certs?hl=ja#step_5_test_with_openssl</walkthrough-footnote>
-
-次のコマンドでロードバランサがクライアントに対して提示する証明書が想定通りであることを確認します。
-
-```bash
-echo | openssl s_client -showcerts -servername cnsrunapp.uma-arai.com -connect ${LB_GLOBAL_IP}:443 -verify 99 -verify_return_error
-```
-
-出力の最終行に、`Verify return code: 0 (ok)`と表示されていれば正常に証明書が設定されています。
-続けてフロントエンドアプリケーションにアクセスしてみましょう。
-
-```bash
-curl -i https://cnsrunapp.uma-arai.com/backend?id=none
-# HTTP200 OK
-```
-
-HTTP200 OKが返却されれば正常に設定されています。
-
-このようにロードバランサやDNS周辺の設定が少しありましたがシンプルにできたかと思います。
-Google Cloudのマネージドサービスを利用することで、簡単に証明書を取得してカスタムドメインを利用することができます。
-
-本設定を利用することで、さらにプロダクション環境に近い状態でCloud Runを利用したサービスの提供が可能となります。
-
 ## **お疲れ様でした！**
 
 <walkthrough-conclusion-trophy></walkthrough-conclusion-trophy>
@@ -793,7 +624,7 @@ Google Cloudのマネージドサービスを利用することで、簡単に�
 最後に課金を防ぐため、リソースの削除に進みましょう。
 6章で作成したリソースを先に削除し、次に5章で作成をしたリソースを削除します。
 各章の削除手順を記載したマークダウンを順次確認してください。
-    
+
 ```bash
 teachme doc/deletion/chap6_deletion.md
 ```
