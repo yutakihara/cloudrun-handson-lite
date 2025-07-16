@@ -1,10 +1,10 @@
 options:
   logging: CLOUD_LOGGING_ONLY
-  pool:
-    name: 'projects/$PROJECT_ID/locations/asia-northeast1/workerPools/uma-test-pool'
   env:
     - "DEPLOY_ENV=$_DEPLOY_ENV"
     - "SKAFFOLD_DEFAULT_REPO=asia-northeast1-docker.pkg.dev/$PROJECT_ID/cnsrun-app"
+
+serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/cnsrun-cloudbuild@$PROJECT_ID.iam.gserviceaccount.com'
 
 steps:
   - name: "gcr.io/k8s-skaffold/skaffold:v2.10.1"

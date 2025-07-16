@@ -333,6 +333,9 @@ gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
   --member=serviceAccount:cnsrun-clouddeploy@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com \
   --condition=None \
   --role=roles/storage.objectUser
+
+# TODO: Artifact Registryの読み取り権限を追加する
+
 ```
 
 ### **2. デリバリーパイプラインの作成**
@@ -585,7 +588,8 @@ REPO_NAME=$(gcloud beta builds repositories list --connection=cnsrun-app-handson
 ```
 
 ```bash
-gcloud beta builds triggers create github \
+gcloud beta builds triggers create \
+github \
 --name=cnsrun-backend-trigger \
 --region=asia-northeast1 \
 --repository="$REPO_NAME" \
