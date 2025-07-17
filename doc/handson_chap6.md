@@ -380,7 +380,7 @@ gcloud deploy apply --file=/tmp/clouddeploy_${APP_TYPE}.yml --region asia-northe
 <walkthrough-spotlight-pointer cssSelector="[id=cfctest-section-nav-item-delivery_pipelines]" validationPath="/deploy/delivery-pipelines/asia-northeast1/cnsrun-frontend"> デリバリーパイプライン </walkthrough-spotlight-pointer> → `[cnsrun-frontend]`を選択し、
 デプロイが保留されていることが確認できます。
 3. 保留中の絵の下にある<walkthrough-spotlight-pointer locator="semantic({button '確認'})" validationPath="/deploy/delivery-pipelines/.*">確認</walkthrough-spotlight-pointer>ボタンを押します。
-4. 行の一番右にある<walkthrough-spotlight-pointer locator="semantic({link 'Review'})" validationPath="/deploy/delivery-pipelines/.*">REVIEW</walkthrough-spotlight-pointer>ボタンを押します。
+4. 行の一番右にある`マニフェストの差分`ボタンを押します。
 5. 承認画面から、どういった変更が発生したかを確認できます。内容を確認したら、<walkthrough-spotlight-pointer locator="semantic({button '承認'})" validationPath="/deploy/delivery-pipelines/asia-northeast1/cnsrun-frontend/releases/.*">承認</walkthrough-spotlight-pointer>ボタンを押してください。
 
 以上で、承認プロセスを導入したアプリケーションのデプロイが完了しました。
@@ -419,10 +419,11 @@ SLI の詳細では、そのまま<walkthrough-spotlight-pointer locator="semant
 通常はこのあと、アラートの設定をして、SLOの監視を行いますが、今回はSLOの設定のみで終了となります。
 
 <walkthrough-info-message>
-フロントエンドアプリケーションにランダムでエラーを応答するパスがあります。abコマンドがローカル環境にある場合、次のコマンドでCloud Runの可用性を下げて、SLOの表示がどう変化するか見てみるのもよいですね。
+フロントエンドアプリケーションにランダムでエラーを応答するパスがあります。
+Cloud Runの可用性を下げて、SLOの表示がどう変化するか見てみるのもよいですね。
 
 ```bash
-ab -n 50000 -c 2 https://$LB_GLOBAL_IP/random
+for i in {1..10000}; do curl -k https://$LB_GLOBAL_IP/random 1> /dev/null 2&>1 ; done
 ```
 
 </walkthrough-info-message>
@@ -458,7 +459,7 @@ gcloud kms keys create $KEY_NAME --location=asia-northeast1 --keyring=$KEYRING_N
 <walkthrough-path-nav path="https://console.cloud.google.com/security/binary-authorization/attestors" > Binary Authorization ページに移動</walkthrough-path-nav>
 
 1. <walkthrough-spotlight-pointer cssSelector="[cfcrouterlink=attestors]" validationPath="/security/binary-authorization/.*">認証者</walkthrough-spotlight-pointer>タブを選択します。
-2. <walkthrough-spotlight-pointer locator="semantic({link '認証者を作成'})" validationPath="/security/binary-authorization/attestors">認証者を作成</walkthrough-spotlight-pointer>ボタンを押します。
+2. <walkthrough-spotlight-pointer locator="semantic({link '認証者の作成'})" validationPath="/security/binary-authorization/attestors">認証者の作成</walkthrough-spotlight-pointer>ボタンを押します。
 3. 認証者の名前として、`cnsrun-attestor`と入力します。
 4. 公開鍵として<walkthrough-spotlight-pointer locator="semantic({button 'pkix 公開鍵を追加'})" validationPath="/security/binary-authorization/attestors">PKIX 公開鍵</walkthrough-spotlight-pointer>を選択します。
 5. 次のコマンドで表示されるキーバージョンのリソースIDをメモします。次の手順で利用します。
@@ -519,11 +520,11 @@ gcloud beta container binauthz attestations sign-and-create \
 今回作成した認証者によって承認されたコンテナイメージのみデプロイを許可するように設定します。
 
 1. <walkthrough-spotlight-pointer cssSelector="[cfcrouterlink=policy]" validationPath="/security/binary-authorization/.*">ポリシー</walkthrough-spotlight-pointer>タブを選択します。
-2. <walkthrough-spotlight-pointer locator="semantic({link 'ポリシーを編集'})" validationPath="/security/binary-authorization/policy">ポリシーを編集</walkthrough-spotlight-pointer>を編集を押します。
+2. <walkthrough-spotlight-pointer locator="semantic({link 'ポリシーの編集'})" validationPath="/security/binary-authorization/policy">ポリシーの編集</walkthrough-spotlight-pointer>を押します。
 3. デフォルトのルールとして、<walkthrough-spotlight-pointer cssSelector="input[value=REQUIRE_ATTESTATION]" validationPath="/security/binary-authorization/policy/edit">証明書を要求</walkthrough-spotlight-pointer>にチェックを入れます。
 4. 要求した証明書を認証する認証者（attestor)を指定するために、 <walkthrough-spotlight-pointer locator="semantic({button '認証者の追加'})" validationPath="/security/binary-authorization/policy/edit">認証者の追加</walkthrough-spotlight-pointer>を押します。
 5. `プロジェクトと認証者の名前により追加`にチェックを入れたままにし、アテスターの`[認証者の名前]`として、`cnsrun-attestor`を入力して、`[認証者の追加]`ボタンを押します。
-6. <walkthrough-spotlight-pointer locator="semantic({button 'ポリシーを保存'})" validationPath="/security/binary-authorization/policy/edit">ポリシーを保存</walkthrough-spotlight-pointer>を押して編集を完了します。
+6. <walkthrough-spotlight-pointer locator="semantic({button 'SAVE POLICY'})" validationPath="/security/binary-authorization/policy/edit">SAVE POLICY</walkthrough-spotlight-pointer>を押して編集を完了します。
 
 ### **5. Cloud Runのセキュリティ設定変更**
 
@@ -614,6 +615,7 @@ CI/CDプロセスが完了し、デプロイが成功することを確認しま
 祈りましょう。
 
 Binary Authorizationが有効化されており、新しいアプリケーションのデプロイが成功していればOKです！
+Cloud Runのコンソールから、新しいリビジョンのサービスデプロイが成功していれば完了です。
 
 ## **お疲れ様でした！**
 
