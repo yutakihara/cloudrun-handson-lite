@@ -42,31 +42,6 @@ gcloud compute target-https-proxies update cnsrun-https-proxies --ssl-certificat
 gcloud compute ssl-certificates delete cnsrun-frontend --quiet
 ```
 
-## **DNSレコードの削除**
-
-本ハンズオン用にCloud Domainsでドメインを取得している場合のみ、本手順を実施します。
-
-<walkthrough-info-message>自身で管理していたドメインを利用している場合は、この手順は不要です。ハンズオンで追加したDNSレコードは削除しておきましょう</walkthrough-info-message>
-
-ロードバランサのグローバルIPに紐づけたAレコードの削除をしましょう。
-
-<walkthrough-path-nav path="https://console.cloud.google.com/net-services/dns" >Cloud DNS に移動</walkthrough-path-nav>
-
-1. 作成したDNSゾーンを選択します。
-2. SOAレコード、NSレコードを除くすべてのレコードを削除します。
-3. `[ゾーンを削除]`から対象のゾーンを削除します。
-
-## **ドメインの削除**
-本ハンズオン用にCloud Domainsでドメインを取得している場合のみ、本手順を実施します。
-
-<walkthrough-info-message>自身で管理していたドメインを利用している場合は、この手順は不要です</walkthrough-info-message>
-
-<walkthrough-watcher-block link-url="https://console.cloud.google.com/net-services/domains"> Cloud Domains に移動</walkthrough-watcher-block>
-
-1. `[登録]`画面で削除するドメイン名を選択します。
-2. 削除するドメイン名の横にある`[その他の操作]`ボタンを押します。
-3. ドメインを削除するには、`[削除]`を押します。
-
 ## **SSLポリシーの削除**
 
 ```bash
@@ -86,7 +61,7 @@ Artifact Registryのコンソール画面から`スキャン：オフ`に戻し�
 
 <walkthrough-path-nav path="https://console.cloud.google.com/security/binary-authorization/attestors" > Binary Authorization ページに移動</walkthrough-path-nav>
 
-1. `[ポリシーを編集]`を押します。
+1. `[ポリシーの編集]`を押します。
 2. `[すべてのイメージを許可]`に設定を戻し、保存します。
 
 ### **2. 認証者(Attesotr)の削除**
@@ -122,4 +97,3 @@ Cloud KMSのコンソール画面に進み、作成したキーリングを選�
 ```bash
 teachme doc/deletion/chap5_deletion.md
 ```
-

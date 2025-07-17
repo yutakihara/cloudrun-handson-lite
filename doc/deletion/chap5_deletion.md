@@ -18,18 +18,6 @@
 export REGION=asia-northeast1
 ```
 
-## **Schedulerの削除**
-
-```bash
-gcloud scheduler jobs delete cnsrun-batch-job-scheduler --location="$REGION" --quiet
-```
-
-## **Cloud Runジョブの削除**
-
-```bash
-gcloud run jobs delete cnsrun-batch --region="$REGION" --quiet
-```
-
 ## **SQLの削除**
 
 削除保護があるため、削除保護を外して削除をします。
