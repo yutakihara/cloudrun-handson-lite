@@ -509,6 +509,10 @@ gcloud beta compute backend-services add-backend --global cnsrun-backend-service
 しかし、外部ALBをCloud Runに紐づけたため、外部ALBを利用した経路以外からのアクセスができないようにします。
 フロントエンドアプリケーションの`app/frontend/cloudrun.yaml`に次の修正をします。
 
+```bash
+vim app/frontend/cloudrun.yaml
+```
+
 ```patch
 - run.googleapis.com/ingress: all
 + run.googleapis.com/ingress: internal-and-cloud-load-balancing
@@ -604,9 +608,10 @@ Cloud Buildのトリガを作成します。
 REPO_NAME=$(gcloud beta builds repositories list --connection=cnsrun-app-handson --region=asia-northeast1 --format=json | jq -r .[].name)
 ```
 
+shellに直接貼り付けが機能しないため、
+
 ```bash
-gcloud beta builds triggers create \
-github \
+gcloud beta builds triggers create github \
 --name=cnsrun-backend-trigger \
 --region=asia-northeast1 \
 --repository="$REPO_NAME" \
@@ -676,6 +681,10 @@ gcloud run services describe cnsrun-backend --format='value(status.url)'
 このURLを利用して、フロントエンドアプリケーションの`cloudrun.yaml`内にあるコンテナ環境変数を修正します。
 `{バックエンドアプリケーションCloud RunのURL}`を先ほど取得したURLに置き換えます。
 
+```bash
+vim app/frontend/cloudrun.yaml
+```
+
 ```patch
 -    value: "https://cnsrun-backend-noejq743xa-an.a.run.app" # FIXME: Change BACKEND_FQDN value after backend resources is created
 +    value: "{バックエンドアプリケーションCloud RunのURL}"
@@ -686,6 +695,10 @@ gcloud run services describe cnsrun-backend --format='value(status.url)'
 バックエンドアプリケーションはVPCネットワーク内に配置されているため、VPCネットワークにアクセスするための設定を行います。
 先ほどと同様、フロントエンドアプリケーションの`cloudrun.yaml`内にあるネットワーク設定を修正します。
 `{生成したサブネット名}`を自身のものに置き換えてください。
+
+```bash
+vim app/frontend/cloudrun.yaml
+```
 
 ```patch
 - #         TODO: change for your own vpc name
@@ -708,10 +721,7 @@ git push origin main
 ## **バックエンドアプリケーションの疎通確認**
 
 <walkthrough-info-message>
-バックエンドアプリケーションのデプロイまでに少し時間がかかります。
-先に次のDB作成まで進めましょう。
-
-DBの作成処理まで進んだら、こちらの手順に戻ってきてください。
+バックエンドアプリケーションのデプロイまでに少し時間がかかります。先に次のDB作成まで進めましょう。DBの作成処理まで進んだら、こちらの手順に戻ってきてください。
 </walkthrough-info-message>
 
 フロントエンドアプリケーションを介してバックエンドアプリケーションにアクセスができることを確認します。
@@ -745,8 +755,6 @@ Step5では次の手順で構築を進めます。
 ## **Cloud SQLの作成**
 
 <walkthrough-tutorial-duration duration=30></walkthrough-tutorial-duration>
-
-<walkthrough-menu-navigation sectionId="SQL_SECTION"></walkthrough-menu-navigation>
 
 画面真ん中上部の検索から遷移をしてください。
 
@@ -997,6 +1005,10 @@ gcloud sql instances describe cnsrun-app-instance --format='value(ipAddresses[0]
   - `DB\_HOST`を上記のIPアドレスに変更
     - `DBのIPアドレス`には、gcloudコマンドで取得できるCloud SQLのIPアドレスを指定します。
 
+```bash
+vim app/backend/cloudrun.yaml
+```
+
 ```patch
 - #        env:
 - #          - name: DB_USER
@@ -1029,6 +1041,12 @@ gcloud sql instances describe cnsrun-app-instance --format='value(ipAddresses[0]
 ```
 
 YAML設定ファイルを修正後、コードをプッシュして、Cloud Build経由でバックエンドアプリケーションをデプロイしましょう。
+
+```bash
+git add app/backend/cloudrun.yaml
+git commit -m "feat: hands-on step5"
+git push origin main
+```
 
 **注意：** YAMLファイルはインデントが重要です。修正を行う際は、インデントが正しいことを確認してください。筆者も疎通中何度もミスりました。。。
 
