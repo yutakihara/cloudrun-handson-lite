@@ -498,7 +498,6 @@ gcloud beta compute network-endpoint-groups create cnsrun-app-neg-asia-northeast
     --region=asia-northeast1 \
     --network-endpoint-type=SERVERLESS \
     --cloud-run-service=cnsrun-frontend
-
 gcloud beta compute backend-services add-backend --global cnsrun-backend-services \
     --network-endpoint-group-region=asia-northeast1 \
     --network-endpoint-group=cnsrun-app-neg-asia-northeast1
