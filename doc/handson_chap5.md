@@ -86,7 +86,6 @@ gcloud services enable \
 artifactregistry.googleapis.com \
 run.googleapis.com \
 cloudbuild.googleapis.com \
-sourcerepo.googleapis.com \
 container.googleapis.com \
 secretmanager.googleapis.com \
 cloudscheduler.googleapis.com \
@@ -337,9 +336,10 @@ gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
   --member=serviceAccount:cnsrun-clouddeploy@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com \
   --condition=None \
   --role=roles/storage.objectUser
-
-# TODO: Artifact Registryの読み取り権限を追加する
-
+gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
+  --member=serviceAccount:cnsrun-clouddeploy@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com \
+  --condition=None \
+  --role=roles/artifactregistry.reader
 ```
 
 ### **2. デリバリーパイプラインの作成**
@@ -361,6 +361,10 @@ gcloud deploy apply --file=/tmp/clouddeploy_${APP_TYPE}.yml --region asia-northe
 CI/CDがうまく機能をして、アプリケーションへの修正がデプロイされることを確認しましょう。
 Cloud Buildに接続したGitHubのリポジトリを開き、`app/frontend/main.go`を開いて`http.HandleFunc("/frontend")`の応答を適当な文字列に変更してみましょう。
 
+```bash
+vim app/frontend/main.go
+```
+
 ```go
 -   fmt.Fprintf(w, "Hello cnsrun handson's user:D\n")
 +   fmt.Fprintf(w, "Hello first hands-on\n")
@@ -378,16 +382,26 @@ YOUR_PROJECT_ID=$(echo $GOOGLE_CLOUD_PROJECT)
 ```bash
 sed -i -e "s/PROJECT_ID/${YOUR_PROJECT_ID}/g" app/frontend/cloudrun.yaml
 sed -i -e "s/PROJECT_ID/${YOUR_PROJECT_ID}/g" app/backend/cloudrun.yaml
-sed -i -e "s/PROJECT_ID/${YOUR_PROJECT_ID}/g" app/batch/cloudrun.yaml
 ```
 
 コマンド実行が難しい場合は、次のファイルの`PROJECT_ID`を手動で自身のプロジェクトIDに置き換えてください。
 
 - `app/frontend/cloudrun.yaml`
 - `app/backend/cloudrun.yaml`
-- `app/batch/cloudrun.yaml`
 
 変更を加えたら、リモートブランチへプッシュをして、Cloud Buildの`[履歴メニュー]`から処理が起動したことを確認します。
+
+プッシュ前に、まずはGitHubの認証をしておきます。
+画面の案内にそって認証をしてください。
+
+```bash
+gh auth login
+? Where do you use GitHub? GitHub.com
+? What is your preferred protocol for Git operations on this host? HTTPS
+? How would you like to authenticate GitHub CLI? Login with a web browser
+```
+
+次に、リポジトリに加えた変更をプッシュします。
 
 ```bash
 git add app

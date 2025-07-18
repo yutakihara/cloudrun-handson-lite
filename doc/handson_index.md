@@ -11,7 +11,7 @@
 みなさまが自由にソースコードを更新できるようにするため、みなさま自身のGitHubへソースコードをコピー（Fork）していただきます。
 
 1. GitHubのアカウントへログインをします。
-2. [ハンズオンのコードURL](https://github.com/uma-arai/cloudrun-handson)を開きます。
+2. [ハンズオンのコードURL](https://github.com/uma-arai/cloudrun-handson-lite)を開きます。
 3. 画面内にある`[Fork]`ボタンをクリックします。
 4. `[Create fork]`ボタンをクリックします。
 
@@ -19,14 +19,13 @@
 自身のGitHubアカウントにコピーしたハンズオンコンテンツを取得しておきましょう。
 
 ```bash
-GITHUB_USERNAME={自身のGitHubユーザ名}
+GITHUB_USERNAME={YOUR_GITHUB_USER_ID}
 ```
 
 ```bash
-git clone https://github.com/${GITHUB_USERNAME}/cloudrun-handson
+git clone https://github.com/${GITHUB_USERNAME}/cloudrun-handson-lite
 ```
 
-チュートリアル（teachme)は、Forkしたコンテンツでなくても問題ありませんので、このまま続けていきます。
 それでは、ハンズオンを進めていきましょう。
 
 ## **ハンズオンの一覧**
@@ -34,13 +33,13 @@ git clone https://github.com/${GITHUB_USERNAME}/cloudrun-handson
 ### **基本編ハンズオン**
 
 ```bash
-cd ~/cloudrun-handson
+cd ~/cloudrun-handson-lite
 teachme doc/handson_chap5.md
 ```
 
 ### **応用編ハンズオン**
 
 ```bash
-cd ~/cloudrun-handson
+cd ~/cloudrun-handson-lite
 teachme doc/handson_chap6.md
 ```
