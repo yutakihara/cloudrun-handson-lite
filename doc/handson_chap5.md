@@ -11,6 +11,10 @@
 たとえば、KMSの操作時にCloud KMS暗号オペレータロールが持つ権限を不足します。
 ハンズオンを円滑にすすめるためにできるだけ、**Owner権限で操作**を行ってください。
 
+<walkthrough-error-message>
+別サービス画面を開くとCloudshellが開き直しになって、サイドパネルがリセットされます。その際は、再度teachmeコマンドで開き直すようにしてください。
+</walkthrough-error-message>
+
 <walkthrough-footnote>本ハンズオンの事前準備は、Apache-2.0で配布されている [はじめてみよう Cloud Run ハンズオン](https://github.com/google-cloud-japan/gcp-getting-started-cloudrun/blob/main/tutorial.md)の内容を利用しています。</walkthrough-footnote>
 
 ## Google Cloud プロジェクトの設定、確認
@@ -100,9 +104,9 @@ sqladmin.googleapis.com
 今回利用するサンプルアプリケーションは非常にシンプルなものです。
 
 - フロントエンドアプリケーション
-  - HTTPリクエストを受け取り、テキストを返却するアプリケーションです。
+  - HTTPリクエストを受け取り、テキストを返却するアプリケーション
 - バックエンドアプリケーション
-  - HTTPリクエストを受け取り、JSON形式の応答を返却するアプリケーションです。
+  - HTTPリクエストを受け取り、JSON形式の応答を返却するアプリケーション
 
 ### **フォルダ、ファイル構成**
 

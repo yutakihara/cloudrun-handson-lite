@@ -31,14 +31,14 @@ git clone https://github.com/${GITHUB_USERNAME}/cloudrun-handson
 
 ## **ハンズオンの一覧**
 
-### **5章ハンズオン**
+### **基本編ハンズオン**
 
 ```bash
 cd ~/cloudrun-handson
 teachme doc/handson_chap5.md
 ```
 
-### **6章ハンズオン**
+### **応用編ハンズオン**
 
 ```bash
 cd ~/cloudrun-handson
