@@ -552,6 +552,32 @@ watch -n 5 curl -sk https://$LB_GLOBAL_IP/frontend
 
 正常に応答が返ってくるようになればOKです。
 
+## **デフォルトURLの停止**
+
+2025年7月16日に、Cloud RunのデフォルトURLを無効化できる機能が一般公開になりました。
+<https://cloud.google.com/run/docs/release-notes#July_16_2025>
+
+さきほどのコマンドでフロントエンドはロードバランサのIP経由でアクセス可能にしています。
+フロントエンドアプリケーションの`cloudrun.yaml`を修正して、デフォルトURLを無効化しておきましょう。
+
+```bash
+vim app/frontend/cloudrun.yaml
+```
+
+```patch
+- # run.googleapis.com/default-url-disabled: 'true'
++ run.googleapis.com/default-url-disabled: 'true'
+```
+
+```bash
+git add app/frontend/cloudrun.yaml
+git commit -m "feat: remove default url"
+git push origin main
+```
+
+本設定によって、`gcloud run services describe cnsrun-frontend --region=asia-northeast1 --project=${GOOGLE_CLOUD_PROJECT} --format='value(status.url)'`からURLが返却されなくなります。
+フロントエンドアプリケーションのデプロイが始まったら次に進みましょう。
+
 ## **VPCネットワークの作成**
 
 <walkthrough-tutorial-duration duration=5></walkthrough-tutorial-duration>
