@@ -307,39 +307,6 @@ curl -i -k https://$LB_GLOBAL_IP/backend?id="foo\%27\%20OR\%20bar\%27\%3D\%27bar
 このように、Cloud Armorを利用することで一般的なセキュリティ攻撃に対する対策を簡易にできます。
 ただし、前述したようにCloud Runに直接Cloud Armorを設定はできないため、外部ALBを利用する必要がある点には注意をしておきましょう。
 
-## **レジストリ内のイメージ保持設定**
-
-<walkthrough-tutorial-duration duration=5></walkthrough-tutorial-duration>
-
-まず、Artifact Registryのクリーンアップポリシーを確認します。
-
-```bash
-gcloud artifacts repositories describe cnsrun-app --location=asia-northeast1 --format=json | jq .cleanupPolicies
-```
-
-最終行が`null`であれば、クリーンアップポリシーが設定されていないことを示しています。
-
-次に、クリーンアップポリシーを設定します。
-条件付き削除、条件付き保持、最新イメージ保持のポリシーを1つのJSONに記述をして、そのJSONファイルをインプットとして指定します。
-
-```bash
-gcloud artifacts repositories set-cleanup-policies cnsrun-app \
---location=asia-northeast1 \
---policy=./infra/json/cleanup-policy.json
-```
-
-再度、Artifact Registryのクリーンアップポリシーを確認します。
-
-```bash
-gcloud artifacts repositories describe cnsrun-app --location=asia-northeast1 --format=json | jq .cleanupPolicies
-```
-
-クリーンアップポリシーが表示されていることを確認できればOKです。
-残念ながら、2024年5月現在ではクリーンアップポリシーを手動で実行することができません。
-Google Cloud側で自動実行され、頻度はドキュメントに未記載であり1日1回程度となります。
-
-ハンズオン環境を保持する場合、無事削除されたことを是非確認をしてみてください。
-
 ## **デプロイにおける承認プロセスの考慮**
 
 デプロイの際に、承認プロセスを導入することでデプロイの安全性を高めることができます。
