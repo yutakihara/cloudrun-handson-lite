@@ -2,7 +2,7 @@
 
 ## 概要
 
-ハンズオン（基本編）で構築する全体概要図は[こちらのリンク](https://github.com/uma-arai/cloudrun-handson/blob/main/images/05-handson-architecture-overview.png?raw=true)となります。
+ハンズオン（基本編）で構築する全体概要図は[こちらのリンク](https://github.com/uma-arai/cloudrun-handson-lite/blob/main/images/05-handson-architecture-overview-lite.png?raw=true)となります。
 
 今回のハンズオンではリージョンは可能な限り`asia-northeast1`を利用します。
 
